@@ -18,9 +18,9 @@ public class ApplicationConfig {
     @Bean
     public AccessControlService accessControlService(AccessControlRepositoryPort accessControlRepositoryPort,
             EventPublisherPort eventPublisherPort) {
-        return new AccessControlService(new AccessPerEmployeeImpl(accessControlRepositoryPort, eventPublisherPort),
+        return new AccessControlService(new AccessPerEmployeeImpl(accessControlRepositoryPort),
                 new CheckOutImpl(accessControlRepositoryPort, eventPublisherPort),
-                new EmployeesByDateImpl(accessControlRepositoryPort, eventPublisherPort),
+                new EmployeesByDateImpl(accessControlRepositoryPort),
                 new RegisterIncomeImpl(accessControlRepositoryPort, eventPublisherPort));
     }
 

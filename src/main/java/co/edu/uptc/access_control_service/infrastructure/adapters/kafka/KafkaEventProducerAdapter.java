@@ -12,8 +12,6 @@ import co.edu.uptc.access_control_service.infrastructure.utils.JsonUtils;
 public class KafkaEventProducerAdapter implements EventPublisherPort {
     private static final String TOPIC_INCOME = "usercheckin_events";
     private static final String TOPIC_CHECKOUT = "usercheckout_events";
-    private static final String TOPIC_ALL_EMPLOYEES = "allemployeesbydate_events";
-    private static final String TOPIC_EMPLOYEE_ACCESS = "employeebydates_events";
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final JsonUtils jsonUtils;
 
@@ -45,27 +43,5 @@ public class KafkaEventProducerAdapter implements EventPublisherPort {
         String json = jsonUtils.toJson(eventPayload);
         kafkaTemplate.send(TOPIC_CHECKOUT, json);
         System.out.println("Evento CHECK_OUT enviado" + json);
-    }
-    @Override
-    public void sendAllEmployeesEvent(String accessdatetime) {
-        Map<String, String> eventPayload = Map.of(
-            "accessdatetime", accessdatetime,
-            "eventType", "ALL_EMPLOYEES"
-        );
-        String json = jsonUtils.toJson(eventPayload);
-        kafkaTemplate.send(TOPIC_ALL_EMPLOYEES, json);
-        System.out.println("Evento ALL_EMPLOYEES enviado" + json);
-    }
-    @Override
-    public void sendAccessPerEmployeeEvent(String employeId, String startDate, String endDate) {
-        Map<String, String> eventPayload = Map.of(
-            "employeId", employeId,
-            "startDate", startDate,
-            "endDate", endDate,
-            "eventType", "ACCESS_PER_EMPLOYEE"
-        );
-        String json = jsonUtils.toJson(eventPayload);
-        kafkaTemplate.send(TOPIC_EMPLOYEE_ACCESS, json);
-        System.out.println("Evento ACCESS_PER_EMPLOYEE enviado" + json);
     }
 }
