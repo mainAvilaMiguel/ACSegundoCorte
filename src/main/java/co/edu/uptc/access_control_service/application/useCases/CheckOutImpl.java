@@ -24,10 +24,10 @@ public class CheckOutImpl implements CheckOutUseCase {
         AccessDateTime dateVO = new AccessDateTime(accessDate);
         int totalAccess = accessControlRepositoryPort.countAccessByEmployeeId(employeeId);
         if (totalAccess % 2 == 0) {
+            eventPublisherPort.sendUserCheckOutEvent(employeeId, accessDate);
             throw new IllegalStateException("El empleado no ha registrado entrada, no puede salir");
         }
         AccessControl saved =accessControlRepositoryPort.saveAccess(new AccessControl(idVO, dateVO));
-        eventPublisherPort.sendUserCheckOutEvent(employeeId, accessDate);
         return saved;
     }
 

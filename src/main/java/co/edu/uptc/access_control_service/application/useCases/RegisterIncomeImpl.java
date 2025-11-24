@@ -21,10 +21,10 @@ public class RegisterIncomeImpl implements RegisterIncomeUseCase{
         AccessDateTime dateVO = new AccessDateTime(accessDate);
          int totalAccess = accessControlRepositoryPort.countAccessByEmployeeId(employeeId);
         if (totalAccess % 2 != 0) {
+            eventPublisherPort.sendUserCheckInEvent(employeeId, accessDate);
             throw new IllegalStateException("El empleado no puede entrar porque ya ha entrado");
         }
         AccessControl saved =accessControlRepositoryPort.saveAccess(new AccessControl(idVO, dateVO));
-        eventPublisherPort.sendUserCheckInEvent(employeeId, accessDate);
         return saved;
     }
    

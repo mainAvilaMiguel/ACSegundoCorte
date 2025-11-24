@@ -27,7 +27,7 @@ public class KafkaEventProducerAdapter implements EventPublisherPort {
         Map<String, String> eventPayload = Map.of(
             "employeeId", employeeId,
             "accessdatetime", accessdatetime,
-            "eventType", "CHECK_IN"
+            "eventType", "EMPLOYEE_ALREADY_ENTERED"
         );
         String json = jsonUtils.toJson(eventPayload);
         kafkaTemplate.send(TOPIC_INCOME, json);
@@ -38,7 +38,7 @@ public class KafkaEventProducerAdapter implements EventPublisherPort {
         Map<String, String> eventPayload = Map.of(
             "employeeId", employeeId,
             "accessdatetime", accessdatetime,
-            "eventType", "CHECK_OUT"
+            "eventType", "EMPLOYEE_ALREADY_LEFT"
         );
         String json = jsonUtils.toJson(eventPayload);
         kafkaTemplate.send(TOPIC_CHECKOUT, json);
