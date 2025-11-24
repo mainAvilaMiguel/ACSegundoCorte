@@ -3,15 +3,19 @@ package co.edu.uptc.access_control_service.application.useCases;
 import co.edu.uptc.access_control_service.domain.models.AccessControl;
 import co.edu.uptc.access_control_service.domain.ports.in.CheckOutUseCase;
 import co.edu.uptc.access_control_service.domain.ports.out.AccessControlRepositoryPort;
+import co.edu.uptc.access_control_service.domain.ports.out.EventPublisherPort;
 import co.edu.uptc.access_control_service.domain.valueobjects.AccessDateTime;
 import co.edu.uptc.access_control_service.domain.valueobjects.EmployeeId;
 
 public class CheckOutImpl implements CheckOutUseCase {
 
     private final AccessControlRepositoryPort accessControlRepositoryPort;
+    private final EventPublisherPort eventPublisherPort;
 
-    public CheckOutImpl(AccessControlRepositoryPort accessControlRepositoryPort) {
+    public CheckOutImpl(AccessControlRepositoryPort accessControlRepositoryPort,
+            EventPublisherPort eventPublisherPort) {
         this.accessControlRepositoryPort = accessControlRepositoryPort;
+        this.eventPublisherPort = eventPublisherPort;
     }
 
     @Override
@@ -22,7 +26,9 @@ public class CheckOutImpl implements CheckOutUseCase {
         if (totalAccess % 2 == 0) {
             throw new IllegalStateException("El empleado no ha registrado entrada, no puede salir");
         }
-        return accessControlRepositoryPort.saveAccess(new AccessControl(idVO, dateVO));
+        AccessControl saved =accessControlRepositoryPort.saveAccess(new AccessControl(idVO, dateVO));
+        eventPublisherPort.sendUserCheckOutEvent(employeeId, accessDate);
+        return saved;
     }
 
 }

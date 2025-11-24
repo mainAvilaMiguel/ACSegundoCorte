@@ -9,21 +9,24 @@ import co.edu.uptc.access_control_service.application.useCases.CheckOutImpl;
 import co.edu.uptc.access_control_service.application.useCases.EmployeesByDateImpl;
 import co.edu.uptc.access_control_service.application.useCases.RegisterIncomeImpl;
 import co.edu.uptc.access_control_service.domain.ports.out.AccessControlRepositoryPort;
+import co.edu.uptc.access_control_service.domain.ports.out.EventPublisherPort;
 import co.edu.uptc.access_control_service.infrastructure.repositories.JpaAccessControlRepositoryAdapter;
 
 @Configuration
 public class ApplicationConfig {
 
     @Bean
-    public AccessControlService accessControlService (AccessControlRepositoryPort accessControlRepositoryPort){
-        return new AccessControlService(new AccessPerEmployeeImpl(accessControlRepositoryPort),
-                                       new CheckOutImpl(accessControlRepositoryPort),
-                                       new EmployeesByDateImpl(accessControlRepositoryPort),
-                                       new RegisterIncomeImpl(accessControlRepositoryPort)
-);
-    }  
+    public AccessControlService accessControlService(AccessControlRepositoryPort accessControlRepositoryPort,
+            EventPublisherPort eventPublisherPort) {
+        return new AccessControlService(new AccessPerEmployeeImpl(accessControlRepositoryPort, eventPublisherPort),
+                new CheckOutImpl(accessControlRepositoryPort, eventPublisherPort),
+                new EmployeesByDateImpl(accessControlRepositoryPort, eventPublisherPort),
+                new RegisterIncomeImpl(accessControlRepositoryPort, eventPublisherPort));
+    }
+
     @Bean
-    public AccessControlRepositoryPort accessControlRepositoryPort (JpaAccessControlRepositoryAdapter jpaAccessControlRepositoryAdapter){
+    public AccessControlRepositoryPort accessControlRepositoryPort(
+            JpaAccessControlRepositoryAdapter jpaAccessControlRepositoryAdapter) {
         return jpaAccessControlRepositoryAdapter;
-    } 
+    }
 }

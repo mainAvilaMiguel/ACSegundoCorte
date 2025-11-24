@@ -7,14 +7,18 @@ import java.util.List;
 import co.edu.uptc.access_control_service.domain.models.AccessControl;
 import co.edu.uptc.access_control_service.domain.ports.in.AccessPerEmployeeUseCase;
 import co.edu.uptc.access_control_service.domain.ports.out.AccessControlRepositoryPort;
+import co.edu.uptc.access_control_service.domain.ports.out.EventPublisherPort;
 import co.edu.uptc.access_control_service.domain.valueobjects.EmployeeId;
 
 public class AccessPerEmployeeImpl implements AccessPerEmployeeUseCase {
 
     private final AccessControlRepositoryPort accessControlRepositoryPort;
+    private final EventPublisherPort eventPublisherPort;
 
-    public AccessPerEmployeeImpl(AccessControlRepositoryPort accessControlRepositoryPort) {
+    public AccessPerEmployeeImpl(AccessControlRepositoryPort accessControlRepositoryPort,
+            EventPublisherPort eventPublisherPort) {
         this.accessControlRepositoryPort = accessControlRepositoryPort;
+        this.eventPublisherPort = eventPublisherPort;
     }
 
     @Override
@@ -25,7 +29,9 @@ public class AccessPerEmployeeImpl implements AccessPerEmployeeUseCase {
             if (start.isAfter(end)) {
                 throw new IllegalArgumentException("La fecha inicial no puede ser mayor que la fecha final");
             }
-            return accessControlRepositoryPort.accessPerEmployee(employeeId, startDate, endDate);
+            List<AccessControl> results = accessControlRepositoryPort.accessPerEmployee(employeeId, startDate, endDate);
+            eventPublisherPort.sendAccessPerEmployeeEvent(employeeId, startDate, endDate);
+            return results;
         } catch (DateTimeParseException e) {
 
             throw new IllegalArgumentException("El formato de fecha debe ser YYYY-MM-DD");

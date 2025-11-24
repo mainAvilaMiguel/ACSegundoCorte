@@ -2,14 +2,18 @@ package co.edu.uptc.access_control_service.application.useCases;
 import co.edu.uptc.access_control_service.domain.models.AccessControl;
 import co.edu.uptc.access_control_service.domain.ports.in.RegisterIncomeUseCase;
 import co.edu.uptc.access_control_service.domain.ports.out.AccessControlRepositoryPort;
+import co.edu.uptc.access_control_service.domain.ports.out.EventPublisherPort;
 import co.edu.uptc.access_control_service.domain.valueobjects.AccessDateTime;
 import co.edu.uptc.access_control_service.domain.valueobjects.EmployeeId;
 
 public class RegisterIncomeImpl implements RegisterIncomeUseCase{
     private final AccessControlRepositoryPort accessControlRepositoryPort;
+    private final EventPublisherPort eventPublisherPort;
 
-    public RegisterIncomeImpl(AccessControlRepositoryPort accessControlRepositoryPort) {
+    public RegisterIncomeImpl(AccessControlRepositoryPort accessControlRepositoryPort,
+                              EventPublisherPort eventPublisherPort) {
         this.accessControlRepositoryPort = accessControlRepositoryPort;
+        this.eventPublisherPort = eventPublisherPort;
     }
     @Override
     public AccessControl registerIncome(String employeeId, String accessDate) {
@@ -19,7 +23,9 @@ public class RegisterIncomeImpl implements RegisterIncomeUseCase{
         if (totalAccess % 2 != 0) {
             throw new IllegalStateException("El empleado no puede entrar porque ya ha entrado");
         }
-        return accessControlRepositoryPort.saveAccess(new AccessControl(idVO, dateVO));
+        AccessControl saved =accessControlRepositoryPort.saveAccess(new AccessControl(idVO, dateVO));
+        eventPublisherPort.sendUserCheckInEvent(employeeId, accessDate);
+        return saved;
     }
    
 }
