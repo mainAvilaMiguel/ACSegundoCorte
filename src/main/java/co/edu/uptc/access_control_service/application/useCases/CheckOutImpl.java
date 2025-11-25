@@ -25,10 +25,19 @@ public class CheckOutImpl implements CheckOutUseCase {
         int totalAccess = accessControlRepositoryPort.countAccessByEmployeeId(employeeId);
         if (totalAccess % 2 == 0) {
             eventPublisherPort.sendUserCheckOutEvent(employeeId, accessDate);
-            throw new IllegalStateException("El empleado no ha registrado entrada, no puede salir");
+            throw new IllegalStateException("El empleado no ha registrado ingreso aun, no puede registrarse la salida");
         }
         AccessControl saved =accessControlRepositoryPort.saveAccess(new AccessControl(idVO, dateVO));
         return saved;
+    }
+
+    @Override
+    public boolean validCheckOut(String employeeId) {
+        int totalAccess = accessControlRepositoryPort.countAccessByEmployeeId(employeeId);
+        if (totalAccess % 2 == 0) {
+            return false;
+        }
+        return true;
     }
 
 }

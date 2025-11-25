@@ -8,6 +8,7 @@ import co.edu.uptc.access_control_service.domain.valueobjects.EmployeeId;
 
 public class RegisterIncomeImpl implements RegisterIncomeUseCase{
     private final AccessControlRepositoryPort accessControlRepositoryPort;
+
     private final EventPublisherPort eventPublisherPort;
 
     public RegisterIncomeImpl(AccessControlRepositoryPort accessControlRepositoryPort,
@@ -19,13 +20,21 @@ public class RegisterIncomeImpl implements RegisterIncomeUseCase{
     public AccessControl registerIncome(String employeeId, String accessDate) {
        EmployeeId idVO = new EmployeeId(employeeId);
         AccessDateTime dateVO = new AccessDateTime(accessDate);
-         int totalAccess = accessControlRepositoryPort.countAccessByEmployeeId(employeeId);
+        int totalAccess = accessControlRepositoryPort.countAccessByEmployeeId(employeeId);
         if (totalAccess % 2 != 0) {
             eventPublisherPort.sendUserCheckInEvent(employeeId, accessDate);
-            throw new IllegalStateException("El empleado no puede entrar porque ya ha entrado");
+            throw new IllegalStateException("No puede registrarse el ingreso porque el empleado ya ha ingresado");
         }
         AccessControl saved =accessControlRepositoryPort.saveAccess(new AccessControl(idVO, dateVO));
         return saved;
+    }
+    @Override
+    public boolean validIncome(String employeeId) {
+        int totalAccess = accessControlRepositoryPort.countAccessByEmployeeId(employeeId);
+        if (totalAccess % 2 != 0) {
+            return false;
+        }
+        return true;
     }
    
 }

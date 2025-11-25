@@ -17,10 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
 import co.edu.uptc.access_control_service.application.services.AccessControlService;
 import co.edu.uptc.access_control_service.domain.models.AccessControl;
 import co.edu.uptc.access_control_service.domain.ports.in.AccessControlResponse;
+import co.edu.uptc.access_control_service.domain.ports.out.AccessResponse;
 
 @RestController
 @RequestMapping("/access")
-@CrossOrigin(origins = "http://localhost:9093")
+@CrossOrigin(origins = {
+    "http://localhost:9093",
+    "http://localhost:4200"
+})
 public class AccessControlController {
    @Autowired
    private final AccessControlService accessControlService;
@@ -32,13 +36,14 @@ public class AccessControlController {
    @PostMapping("/usercheckin/{employeeId}")
    public ResponseEntity<Map<String, Object>> userCheckIn(@PathVariable String employeeId) {
       try {
-         accessControlService.registerIncome(employeeId,
-               LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+         
          return ResponseEntity.ok(Map.of(
                "success", true,
-               "message", "Acceso registrado exitosamente"));
+               "message", "Petición de acceso registrada exitosamente",
+               "data", accessControlService.createAccessRequest(employeeId,
+               LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), "INCOME")));
       } catch (IllegalStateException | IllegalArgumentException e) {
-         return ResponseEntity.badRequest().body(Map.of(
+         return ResponseEntity.ok(Map.of(
                "success", false,
                "message", e.getMessage()));
       }
@@ -47,12 +52,13 @@ public class AccessControlController {
    @PostMapping("/usercheckout/{employeeId}")
    public ResponseEntity<Map<String, Object>> userCheckOut(@PathVariable String employeeId) {
       try {
-         accessControlService.checkOut(employeeId, LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
          return ResponseEntity.ok(Map.of(
                "success", true,
-               "message", "Salida registrada exitosamente"));
+               "message", "Petición de salida registrada exitosamente",
+               "data", accessControlService.createAccessRequest(employeeId,
+               LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), "OUTCOME")));
       } catch (IllegalStateException | IllegalArgumentException e) {
-         return ResponseEntity.badRequest().body(Map.of(
+         return ResponseEntity.ok(Map.of(
                "success", false,
                "message", e.getMessage()));
       }
@@ -63,17 +69,17 @@ public class AccessControlController {
       try {
          List<Map<String, String>> employees = accessControlService.employessByDate(accessdate);
          if (employees.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of(
+            return ResponseEntity.ok(Map.of(
                   "success", false,
                   "message", "No se registraron accesos en la fecha indicada"));
          } else {
             return ResponseEntity.ok(Map.of(
                   "success", true,
-                  "message", "Empleados que registraron acceso en la fecha indicada",
+                  "message", "Informe generado exitosamente",
                   "data", employees));
          }
       } catch (Exception e) {
-         return ResponseEntity.badRequest().body(Map.of(
+         return ResponseEntity.ok(Map.of(
                "success", false,
                "message", "Error en la solicitud: " + e.getMessage()));
       }
@@ -88,7 +94,7 @@ public class AccessControlController {
                employeeId, startDate, endDate);
 
          if (domainAccessControls.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of(
+            return ResponseEntity.ok(Map.of(
                   "success", false,
                   "message", "No se registraron accesos en el rango indicado"));
          } 
@@ -97,14 +103,30 @@ public class AccessControlController {
                     .toList();
             return ResponseEntity.ok(Map.of(
                   "success", true,
-                  "message", "Accesos del empleado en el rango indicado",
+                  "message", "Informe generado exitosamente",
                   "data", responseList));
          
       } catch (IllegalArgumentException e) {
-         return ResponseEntity.badRequest().body(Map.of(
+         return ResponseEntity.ok(Map.of(
                "success", false,
                "message", e.getMessage()));
       }
    }
+
+   @GetMapping("/request/{requestId}")
+   public ResponseEntity<Map<String, Object>> getRequestStatus(@PathVariable Long requestId) {
+      try {
+         return ResponseEntity.ok(Map.of(
+               "success", true,
+               "message", "Operación realizada correctamente",
+               "data", accessControlService.getAccessRequestById(requestId)
+         ));
+      } catch (IllegalArgumentException e) {
+         return ResponseEntity.ok(Map.of(
+               "success", false,
+               "message", e.getMessage()
+         ));
+      }
+}
 
 }
