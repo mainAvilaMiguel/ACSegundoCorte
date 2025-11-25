@@ -17,14 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 import co.edu.uptc.access_control_service.application.services.AccessControlService;
 import co.edu.uptc.access_control_service.domain.models.AccessControl;
 import co.edu.uptc.access_control_service.domain.ports.in.AccessControlResponse;
-import co.edu.uptc.access_control_service.domain.ports.out.AccessResponse;
+import co.edu.uptc.access_control_service.domain.ports.out.RequestResponse;
 
 @RestController
 @RequestMapping("/access")
-@CrossOrigin(origins = {
-    "http://localhost:9093",
-    "http://localhost:4200"
-})
 public class AccessControlController {
    @Autowired
    private final AccessControlService accessControlService;
@@ -116,10 +112,18 @@ public class AccessControlController {
    @GetMapping("/request/{requestId}")
    public ResponseEntity<Map<String, Object>> getRequestStatus(@PathVariable Long requestId) {
       try {
+         RequestResponse response = accessControlService.getAccessRequestById(requestId);
+         if (response.getStatus().equals("REJECTED")) {
+            return ResponseEntity.ok(Map.of(
+               "success", false,
+               "message", "El empleado no existe o se encuentra desactivado",
+               "data", response
+            ));
+         }
          return ResponseEntity.ok(Map.of(
                "success", true,
                "message", "Operación realizada correctamente",
-               "data", accessControlService.getAccessRequestById(requestId)
+               "data", response
          ));
       } catch (IllegalArgumentException e) {
          return ResponseEntity.ok(Map.of(
