@@ -1,5 +1,9 @@
 package co.edu.uptc.access_control_service.application.useCases;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
+
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
@@ -11,8 +15,6 @@ import co.edu.uptc.access_control_service.domain.ports.out.AccessResponseReposit
 import co.edu.uptc.access_control_service.domain.ports.out.EventPublisherPort;
 import co.edu.uptc.access_control_service.domain.ports.out.GenericAccessResponse;
 import co.edu.uptc.access_control_service.domain.ports.out.RequestResponse;
-
-import java.util.Optional;
 
 @Service
 @Primary
@@ -72,8 +74,10 @@ public class AccessRequestUseCaseImpl implements AccessRequestUseCase {
 
     private boolean validateRequest(String employeeId, String requestType) {
         if(requestType.equals("INCOME") && !registerIncomeUseCase.validIncome(employeeId)){
+            eventPublisher.sendUserCheckInEvent(employeeId, LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
             throw new IllegalStateException("El empleado ya ha registrado un ingreso, no puede registrar otro");
         }else if(requestType.equals("OUTCOME") && !checkOutUseCase.validCheckOut(employeeId)){
+            eventPublisher.sendUserCheckOutEvent(employeeId, LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
             throw new IllegalStateException("El empleado no ha registrado ingreso aun, no puede registrar una salida");
         }
         return true;

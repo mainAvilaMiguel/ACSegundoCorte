@@ -1,15 +1,17 @@
 package co.edu.uptc.access_control_service.infrastructure.adapters.kafka;
 
 import java.util.Map;
+
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+
 import co.edu.uptc.access_control_service.domain.ports.out.EventPublisherPort;
 import co.edu.uptc.access_control_service.infrastructure.utils.JsonUtils;
 
 @Component
 public class KafkaEventProducerAdapter implements EventPublisherPort {
-    private static final String TOPIC_INCOME = "usercheckin_events";
-    private static final String TOPIC_CHECKOUT = "usercheckout_events";
+    private static final String TOPIC_INCOME = "access.alert.events";
+    private static final String TOPIC_CHECKOUT = "access.alert.events";
     private static final String TOPIC_ACCESS_REQUEST = "access_request_events";
     
     private final KafkaTemplate<String, String> kafkaTemplate;
@@ -25,7 +27,7 @@ public class KafkaEventProducerAdapter implements EventPublisherPort {
         Map<String, String> eventPayload = Map.of(
             "employeeId", employeeId,
             "accessdatetime", accessdatetime,
-            "eventType", "EMPLOYEE_ALREADY_ENTERED"
+            "alertCode", "EMPLOYEE_ALREADY_ENTERED"
         );
         String json = jsonUtils.toJson(eventPayload);
         kafkaTemplate.send(TOPIC_INCOME, json);
@@ -37,7 +39,7 @@ public class KafkaEventProducerAdapter implements EventPublisherPort {
         Map<String, String> eventPayload = Map.of(
             "employeeId", employeeId,
             "accessdatetime", accessdatetime,
-            "eventType", "EMPLOYEE_ALREADY_LEFT"
+            "alertCode", "EMPLOYEE_ALREADY_LEFT"
         );
         String json = jsonUtils.toJson(eventPayload);
         kafkaTemplate.send(TOPIC_CHECKOUT, json);
